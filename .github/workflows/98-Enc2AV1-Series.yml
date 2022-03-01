@@ -199,3 +199,7 @@ jobs:
         if: ${{ success() }}
         run: |
           rclone purge ${LocationOnIndex}/${Variant}/${SubLocation}/SubChunks/${ChunkDir}/
+      - uses: kolpav/purge-artifacts-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          expire-in: 0
