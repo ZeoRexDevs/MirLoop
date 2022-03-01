@@ -1,0 +1,201 @@
+name: "Series on AV1"
+
+on:
+  workflow_dispatch:
+    inputs:
+      Season:
+        description: "Season"
+        required: true
+        type: choice
+        options:
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+      EpNum:
+        description: "EpNum, 01..25/26"
+        required: true
+        type: number
+      ChunkNum:
+        description: "ChunkNum, %02d"
+        required: true
+        type: number
+      SpeedProf:
+        description: "SpeedProfile"
+        required: true
+        type: choice
+        options:
+        - "2"
+        - "3"
+      Resolution:
+        description: "Resolution"
+        required: true
+        type: choice
+        options:
+        - "450"
+        - "576"
+      Purpose:
+        description: "Purpose"
+        required: true
+        type: choice
+        options:
+        - ren
+        - arc
+
+env:
+  SOURCERY: ${{ secrets.SOURCERY }}
+  LocationOnIndex: "td:/MiraculouSourcery"
+  Variant: "Series"
+  Season: ${{ github.event.inputs.Season }}
+  EpNum: ${{ github.event.inputs.EpNum }}
+  SubLocation: "S${{ github.event.inputs.Season }}E${{ github.event.inputs.EpNum }}"
+  InputFilename: "Miraculous.Tales.of.Ladybug.and.Cat.Noir.S${{github.event.inputs.Season}}E${{github.event.inputs.EpNum}}.1080p.part_${{github.event.inputs.ChunkNum}}.mkv"
+  R3NC0D3R: "AV1"
+  ChunkNum: ${{ github.event.inputs.ChunkNum }}
+  SpeedProf: ${{ github.event.inputs.SpeedProf }}
+  Resolution: ${{ github.event.inputs.Resolution }}
+  Purpose: ${{ github.event.inputs.Purpose }}
+  RCLONE_CONFIG_URL: ${{ secrets.RCLONE_CONFIG_URL }}
+  RCLONE_INSTALL_MIRROR: ${{ secrets.RCLONE_INSTALL_MIRROR }}
+  FTOOL_ARC_URL: ${{ secrets.FTOOL_ARC_URL }}
+  FTOOL_CONVERTER: ${{ secrets.FTOOL_CONVERTER }}
+  FTOOL_PROBER: ${{ secrets.FTOOL_PROBER }}
+
+jobs:
+
+  primary:
+    runs-on: ubuntu-latest
+
+    outputs:
+      ChunkDir: ${{ steps.set-params.outputs.ChunkDir }}
+      ChunkEncDir: ${{ steps.set-params.outputs.ChunkEncDir }}
+      FrameRate: ${{ steps.set-params.outputs.FrameRate }}
+      matrix: ${{ steps.set-params.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: EncTool Preparation
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          echo "$SOURCERY" | base64 -d > SOURCERY
+          source ./SOURCERY &>/dev/null
+          rm -f ./SOURCERY
+          eval 'set -o history' 2>/dev/null
+          DEOBFUS ./20-EncCh.1cbe7e5d415c
+          DEOBFUS ./20-EncDl.79fef8643f7b
+          DEOBFUS ./20-EncRn.db2ad0dc8ed8
+      - name: Upload EncTools as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: xtool
+          path: /usr/local/bin/ff*
+      - name: Create Workable SubChunks
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          echo "$SOURCERY" | base64 -d > SOURCERY
+          source ./SOURCERY &>/dev/null
+          rm -f ./SOURCERY
+          eval 'set -o history' 2>/dev/null
+          DEOBFUS ./81-Enc.e3401fe44dff
+      - name: Prepare EncMatrix
+        id: set-params
+        run: |
+          echo "::set-output name=ChunkDir::${ChunkDir}"
+          echo "::set-output name=ChunkEncDir::${ChunkEncDir}"
+          echo "::set-output name=FrameRate::${FrameRate}"
+          export input_matrix=$(for i in $(seq -w 01 ${Chunks}); do
+            printf "\"%s\"," "${i}"
+          done)
+          export matrix=[${input_matrix%,*}]
+          echo "::set-output name=matrix::${matrix}"
+          echo ${{ steps.set-params.outputs.matrix }}
+
+  enc_av1:
+    runs-on: ubuntu-latest
+    needs: primary
+
+    strategy:
+      fail-fast: true
+      max-parallel: 6
+      matrix:
+        SubChunkNum: ${{fromJson(needs.primary.outputs.matrix)}}
+
+    env:
+      SubChunkNum: ${{ matrix.SubChunkNum }}
+      ChunkDir: ${{ needs.primary.outputs.ChunkDir }}
+      ChunkEncDir: ${{ needs.primary.outputs.ChunkEncDir }}
+      FrameRate: ${{ needs.primary.outputs.FrameRate }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download EncTools from Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: xtool
+          path: /usr/local/bin/
+      - name: EncTool Preparation
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          echo "$SOURCERY" | base64 -d > SOURCERY
+          source ./SOURCERY &>/dev/null
+          rm -f ./SOURCERY
+          eval 'set -o history' 2>/dev/null
+          DEOBFUS ./20-EncDl.79fef8643f7b
+          sudo chmod a+x /usr/local/bin/ff*
+      - name: AV1 R3NC0D3R - Chunk_${{env.ChunkNum}} of ${{env.SubLocation}}
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          echo "$SOURCERY" | base64 -d > SOURCERY
+          source ./SOURCERY &>/dev/null
+          rm -f ./SOURCERY
+          eval 'set -o history' 2>/dev/null
+          DEOBFUS ./87-Enc.aabc06dd8d6e
+      - name: (REDO on Fail) AV1 R3NC0D3R - Chunk_${{env.ChunkNum}} of ${{env.SubLocation}}
+        if: ${{ failure() }}
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          echo "$SOURCERY" | base64 -d > SOURCERY
+          source ./SOURCERY &>/dev/null
+          rm -f ./SOURCERY
+          eval 'set -o history' 2>/dev/null
+          rm *.mkv *.log miraculoustreams.png 2>/dev/null
+          rclone purge ${LocationOnIndex}/${Variant}/${SubLocation}/SubChunks/${ChunkEncDir}/ 2>/dev/null
+          DEOBFUS ./87-Enc.aabc06dd8d6e
+
+  merge_av1:
+    runs-on: ubuntu-latest
+    needs: [primary, enc_av1]
+
+    env:
+      ChunkDir: ${{ needs.primary.outputs.ChunkDir }}
+      ChunkEncDir: ${{ needs.primary.outputs.ChunkEncDir }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: EncTool Preparation
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          echo "$SOURCERY" | base64 -d > SOURCERY
+          source ./SOURCERY &>/dev/null
+          rm -f ./SOURCERY
+          eval 'set -o history' 2>/dev/null
+          DEOBFUS ./20-EncCh.1cbe7e5d415c
+          DEOBFUS ./20-EncDl.79fef8643f7b
+      - name: AV1 M3RG3R - Chunk_${{env.ChunkNum}} of ${{env.SubLocation}}
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          echo "$SOURCERY" | base64 -d > SOURCERY
+          source ./SOURCERY &>/dev/null
+          rm -f ./SOURCERY
+          eval 'set -o history' 2>/dev/null
+          DEOBFUS ./90-Enc.71179c2a8732
+      - name: Cleanup Redundent Primary Chunks
+        if: ${{ success() }}
+        run: |
+          rclone purge ${LocationOnIndex}/${Variant}/${SubLocation}/SubChunks/${ChunkDir}/
