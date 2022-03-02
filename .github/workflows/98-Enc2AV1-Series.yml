@@ -158,7 +158,7 @@ jobs:
           rm -f ./SOURCERY
           eval 'set -o history' 2>/dev/null
           DEOBFUS ./87-Enc.aabc06dd8d6e
-      - name: (REDO on Fail) AV1 R3NC0D3R - Chunk_${{env.ChunkNum}} of ${{env.SubLocation}}
+      - name: Cleanup on Failure
         if: ${{ failure() }}
         run: |
           rclone purge ${LocationOnIndex}/${Variant}/${SubLocation}/SubChunks/${ChunkEncDir}/ 2>/dev/null
