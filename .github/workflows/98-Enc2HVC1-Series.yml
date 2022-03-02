@@ -19,7 +19,12 @@ on:
       ChunkNum:
         description: "ChunkNum, %02d"
         required: true
-        type: number
+        type: choice
+        options:
+        - "01"
+        - "02"
+        - "03"
+        - "04"
       EncPreset:
         description: "EncPreset"
         required: true
@@ -158,15 +163,7 @@ jobs:
       - name: (REDO on Fail) HVC1 R3NC0D3R - Chunk_${{env.ChunkNum}} of ${{env.SubLocation}}
         if: ${{ failure() }}
         run: |
-          eval 'set -eo pipefail' 2>/dev/null
-          eval 'set +o history' 2>/dev/null
-          echo "$SOURCERY" | base64 -d > SOURCERY
-          source ./SOURCERY &>/dev/null
-          rm -f ./SOURCERY
-          eval 'set -o history' 2>/dev/null
-          rm *.mkv *.log miraculoustreams.png 2>/dev/null
           rclone purge ${LocationOnIndex}/${Variant}/${SubLocation}/SubChunks/${ChunkEncDir}/ 2>/dev/null
-          DEOBFUS ./88-Enc.7c30502f97ba
 
   merge_hvc1:
     runs-on: ubuntu-latest

@@ -19,7 +19,12 @@ on:
       ChunkNum:
         description: "ChunkNum, %02d"
         required: true
-        type: number
+        type: choice
+        options:
+        - "01"
+        - "02"
+        - "03"
+        - "04"
       SpeedProf:
         description: "SpeedProfile"
         required: true
@@ -157,15 +162,7 @@ jobs:
       - name: (REDO on Fail) VP9 R3NC0D3R - Chunk_${{env.ChunkNum}} of ${{env.SubLocation}}
         if: ${{ failure() }}
         run: |
-          eval 'set -eo pipefail' 2>/dev/null
-          eval 'set +o history' 2>/dev/null
-          echo "$SOURCERY" | base64 -d > SOURCERY
-          source ./SOURCERY &>/dev/null
-          rm -f ./SOURCERY
-          eval 'set -o history' 2>/dev/null
-          rm *.mkv *.log miraculoustreams.png 2>/dev/null
           rclone purge ${LocationOnIndex}/${Variant}/${SubLocation}/SubChunks/${ChunkEncDir}/ 2>/dev/null
-          DEOBFUS ./89-Enc.8ffbcf9c61db
 
   merge_vp9:
     runs-on: ubuntu-latest
