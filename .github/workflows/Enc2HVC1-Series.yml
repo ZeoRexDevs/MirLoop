@@ -13,11 +13,38 @@ on:
         - "03"
         - "04"
       EpNum:
-        description: "EpNum, 01..25/26"
+        description: "EpNum"
         required: true
-        type: number
+        type: choice
+        options:
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+        - "05"
+        - "06"
+        - "07"
+        - "08"
+        - "09"
+        - "10"
+        - "11"
+        - "12"
+        - "13"
+        - "14"
+        - "15"
+        - "16"
+        - "17"
+        - "18"
+        - "19"
+        - "20"
+        - "21"
+        - "22"
+        - "23"
+        - "24"
+        - "25"
+        - "26"
       ChunkNum:
-        description: "ChunkNum, %02d"
+        description: "ChunkNum"
         required: true
         type: choice
         options:
