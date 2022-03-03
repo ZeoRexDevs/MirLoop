@@ -75,6 +75,7 @@ jobs:
       ChunkDir: ${{ steps.set-params.outputs.ChunkDir }}
       ChunkEncDir: ${{ steps.set-params.outputs.ChunkEncDir }}
       FrameRate: ${{ steps.set-params.outputs.FrameRate }}
+      ExactFrameRate: ${{ steps.set-params.outputs.ExactFrameRate }}
       matrix: ${{ steps.set-params.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2
@@ -109,6 +110,7 @@ jobs:
           echo "::set-output name=ChunkDir::${ChunkDir}"
           echo "::set-output name=ChunkEncDir::${ChunkEncDir}"
           echo "::set-output name=FrameRate::${FrameRate}"
+          echo "::set-output name=ExactFrameRate::${ExactFrameRate}"
           export input_matrix=$(for i in $(seq -w 01 ${Chunks}); do
             printf "\"%s\"," "${i}"
           done)
@@ -131,6 +133,7 @@ jobs:
       ChunkDir: ${{ needs.primary.outputs.ChunkDir }}
       ChunkEncDir: ${{ needs.primary.outputs.ChunkEncDir }}
       FrameRate: ${{ needs.primary.outputs.FrameRate }}
+      ExactFrameRate: ${{ needs.primary.outputs.ExactFrameRate }}
 
     steps:
       - uses: actions/checkout@v2
