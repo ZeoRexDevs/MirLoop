@@ -52,6 +52,8 @@ on:
         - "02"
         - "03"
         - "04"
+        - "05"
+        - "06"
       SpeedProf:
         description: "SpeedProfile"
         required: true
@@ -102,8 +104,10 @@ jobs:
     outputs:
       ChunkDir: ${{ steps.set-params.outputs.ChunkDir }}
       ChunkEncDir: ${{ steps.set-params.outputs.ChunkEncDir }}
+      TotalFrames: ${{ steps.set-params.outputs.TotalFrames }}
       FrameRate: ${{ steps.set-params.outputs.FrameRate }}
       ExactFrameRate: ${{ steps.set-params.outputs.ExactFrameRate }}
+      ChunkSpanTime: ${{ steps.set-params.outputs.ChunkSpanTime }}
       matrix: ${{ steps.set-params.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2
@@ -137,8 +141,10 @@ jobs:
         run: |
           echo "::set-output name=ChunkDir::${ChunkDir}"
           echo "::set-output name=ChunkEncDir::${ChunkEncDir}"
+          echo "::set-output name=TotalFrames::${TotalFrames}"
           echo "::set-output name=FrameRate::${FrameRate}"
           echo "::set-output name=ExactFrameRate::${ExactFrameRate}"
+          echo "::set-output name=ChunkSpanTime::${ChunkSpanTime}"
           export input_matrix=$(for i in $(seq -w 01 ${Chunks}); do
             printf "\"%s\"," "${i}"
           done)
@@ -162,6 +168,7 @@ jobs:
       ChunkEncDir: ${{ needs.primary.outputs.ChunkEncDir }}
       FrameRate: ${{ needs.primary.outputs.FrameRate }}
       ExactFrameRate: ${{ needs.primary.outputs.ExactFrameRate }}
+      ChunkSpanTime: ${{ needs.primary.outputs.ChunkSpanTime }}
 
     steps:
       - uses: actions/checkout@v2
@@ -201,6 +208,7 @@ jobs:
     env:
       ChunkDir: ${{ needs.primary.outputs.ChunkDir }}
       ChunkEncDir: ${{ needs.primary.outputs.ChunkEncDir }}
+      TotalFrames: ${{ needs.primary.outputs.TotalFrames }}
 
     steps:
       - uses: actions/checkout@v2
