@@ -83,7 +83,7 @@ jobs:
           DEOBFUS ./20-EncCh.1cbe7e5d415c
           DEOBFUS ./20-EncDl.79fef8643f7b
           DEOBFUS ./20-EncRn.db2ad0dc8ed8
-      - name: Chunk+Audio Generator
+      - name: Chunk+Audio Generator for ${{env.SubLocation}}
         run: |
           eval 'set -eo pipefail' 2>/dev/null
           eval 'set +o history' 2>/dev/null
