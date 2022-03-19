@@ -157,7 +157,7 @@ jobs:
 
     strategy:
       fail-fast: true
-      max-parallel: 6
+      max-parallel: 5
       matrix:
         SubChunkNum: ${{fromJson(needs.primary.outputs.matrix)}}
 
